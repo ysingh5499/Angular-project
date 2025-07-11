@@ -1,0 +1,72 @@
+<div class="google-auth-container">
+  <!-- Not Configured State -->
+  <div class="setup-instructions" *ngIf="!isConfigured">
+    <div class="setup-icon">🔧</div>
+    <h3>Google Calendar Setup Required</h3>
+    <p>To connect your Google Calendar, you need to:</p>
+    <ol class="setup-steps">
+      <li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+      <li>Create a new project or select existing one</li>
+      <li>Enable the Google Calendar API</li>
+      <li>Create OAuth 2.0 credentials</li>
+      <li>Update the credentials in the code</li>
+    </ol>
+    <div class="demo-notice">
+      <span class="demo-icon">🎮</span>
+      Currently running in <strong>Demo Mode</strong> with sample data
+    </div>
+  </div>
+
+  <!-- Configured but not signed in -->
+  <div class="sign-in-section" *ngIf="isConfigured && !isSignedIn">
+    <div class="google-icon">📅</div>
+    <h3>Connect Google Calendar</h3>
+    <p>Choose your Gmail account to connect your calendar</p>
+    
+    <!-- Google One-Click Sign-In Button -->
+    <div class="google-signin-container">
+      <div #googleSignInButton class="google-signin-button"></div>
+    </div>
+    
+    <!-- Fallback button if Google button doesn't load -->
+    <button 
+      class="google-sign-in-btn fallback-btn" 
+      (click)="signIn()" 
+      [disabled]="isLoading"
+      style="margin-top: 16px;">
+      <span *ngIf="!isLoading" class="google-logo">G</span>
+      <span *ngIf="isLoading" class="loading-spinner">⏳</span>
+      {{ isLoading ? 'Signing in...' : 'Sign in with Google (Fallback)' }}
+    </button>
+  </div>
+
+  <!-- Signed in state -->
+  <div class="signed-in-section" *ngIf="isSignedIn && userProfile">
+    <div class="user-info">
+      <img 
+        *ngIf="userProfile.picture && !userProfile.demo" 
+        [src]="userProfile.picture" 
+        [alt]="userProfile.name"
+        class="user-avatar">
+      <div *ngIf="userProfile.demo" class="demo-avatar">👤</div>
+      
+      <div class="user-details">
+        <div class="user-name">{{ userProfile.name }}</div>
+        <div class="user-email">{{ userProfile.email }}</div>
+        <div class="connection-status">
+          <span class="status-dot connected"></span>
+          {{ userProfile.demo ? 'Demo Mode' : 'Google Calendar Connected' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="calendar-actions">
+      <button class="action-btn refresh-btn" (click)="refreshCalendar()" *ngIf="!userProfile.demo">
+        🔄 Refresh Calendar
+      </button>
+      <button class="action-btn sign-out-btn" (click)="signOut()" [disabled]="isLoading">
+        {{ isLoading ? 'Signing out...' : 'Sign Out' }}
+      </button>
+    </div>
+  </div>
+</div>

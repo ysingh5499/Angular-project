@@ -8,4 +8,4 @@ RUN npm run build --prod
 
 #stage 2
 FROM nginx:alpine
-COPY --from=node /dist/angular-project /usr/share/nginx/html
+COPY --from=node /app/dist/angular-project /usr/share/nginx/html

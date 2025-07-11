@@ -1,0 +1,128 @@
+<div class="calendar-container">
+  <!-- Calendar Header -->
+  <div class="calendar-header">
+    <div class="calendar-nav">
+      <button class="nav-btn" (click)="navigate('prev')">&lt;</button>
+      <div class="calendar-title">
+        <h2 *ngIf="currentView.type === 'month'">{{ getCurrentMonthYear() }}</h2>
+        <h2 *ngIf="currentView.type === 'week'">{{ getWeekRange() }}</h2>
+        <h2 *ngIf="currentView.type === 'day'">{{ getDayDate() }}</h2>
+      </div>
+      <button class="nav-btn" (click)="navigate('next')">&gt;</button>
+    </div>
+    
+    <div class="calendar-controls">
+      <button class="control-btn today-btn" (click)="goToToday()">Today</button>
+      <div class="view-toggle">
+        <button 
+          class="view-btn" 
+          [class.active]="currentView.type === 'month'"
+          (click)="setView('month')">Month</button>
+        <button 
+          class="view-btn" 
+          [class.active]="currentView.type === 'week'"
+          (click)="setView('week')">Week</button>
+        <button 
+          class="view-btn" 
+          [class.active]="currentView.type === 'day'"
+          (click)="setView('day')">Day</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Month View -->
+  <div *ngIf="currentView.type === 'month'" class="month-view">
+    <div class="calendar-grid">
+      <div class="week-header">
+        <div class="day-header" *ngFor="let day of weekDays">{{ day }}</div>
+      </div>
+      
+      <div class="calendar-weeks">
+        <div class="calendar-week" *ngFor="let week of [0,1,2,3,4,5]">
+          <div 
+            class="calendar-day" 
+            *ngFor="let dayIndex of [0,1,2,3,4,5,6]"
+            [class.today]="isToday(calendarDays[week * 7 + dayIndex])"
+            [class.other-month]="!isCurrentMonth(calendarDays[week * 7 + dayIndex])"
+            (click)="onDateClick(calendarDays[week * 7 + dayIndex])">
+            
+            <div class="day-number">
+              {{ calendarDays[week * 7 + dayIndex].getDate() }}
+            </div>
+            
+            <div class="day-events">
+              <div 
+                class="event-item" 
+                *ngFor="let event of getEventsForDate(calendarDays[week * 7 + dayIndex])"
+                [style.background-color]="event.color">
+                <span class="event-title">{{ event.title }}</span>
+                <span class="event-time" *ngIf="!event.allDay">{{ formatTime(event.startDate) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week View -->
+  <div *ngIf="currentView.type === 'week'" class="week-view">
+    <div class="week-grid">
+      <div class="time-column">
+        <div class="time-slot" *ngFor="let hour of [8,9,10,11,12,13,14,15,16,17,18]">
+          {{ hour > 12 ? hour - 12 : hour }}{{ hour >= 12 ? 'PM' : 'AM' }}
+        </div>
+      </div>
+      
+      <div class="week-days">
+        <div class="week-day" *ngFor="let dayIndex of [0,1,2,3,4,5,6]">
+          <div class="week-day-header">
+            <div class="day-name">{{ weekDays[dayIndex] }}</div>
+            <div class="day-date">{{ calendarDays[dayIndex].getDate() }}</div>
+          </div>
+          
+          <div class="week-day-content">
+            <div 
+              class="week-event" 
+              *ngFor="let event of getEventsForDate(calendarDays[dayIndex])"
+              [style.background-color]="event.color">
+              <div class="event-title">{{ event.title }}</div>
+              <div class="event-time">{{ formatTime(event.startDate) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Day View -->
+  <div *ngIf="currentView.type === 'day'" class="day-view">
+    <div class="day-schedule">
+      <div class="time-column">
+        <div class="time-slot" *ngFor="let hour of [8,9,10,11,12,13,14,15,16,17,18]">
+          {{ hour > 12 ? hour - 12 : hour }}{{ hour >= 12 ? 'PM' : 'AM' }}
+        </div>
+      </div>
+      
+      <div class="day-content">
+        <div 
+          class="day-event" 
+          *ngFor="let event of getEventsForDate(currentView.date)"
+          [style.background-color]="event.color">
+          <div class="event-details">
+            <div class="event-title">{{ event.title }}</div>
+            <div class="event-time">
+              {{ formatTime(event.startDate) }} - {{ formatTime(event.endDate) }}
+            </div>
+            <div class="event-description" *ngIf="event.description">
+              {{ event.description }}
+            </div>
+            <div class="event-location" *ngIf="event.location">
+              📍 {{ event.location }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

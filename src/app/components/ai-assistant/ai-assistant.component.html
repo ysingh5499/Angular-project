@@ -1,0 +1,89 @@
+<!-- AI Assistant Toggle Button -->
+<button class="ai-toggle-btn" (click)="toggleVisibility()" [class.active]="isVisible">
+  🤖 AI Assistant
+</button>
+
+<!-- AI Assistant Panel -->
+<div class="ai-panel" [class.visible]="isVisible">
+  <div class="ai-header">
+    <h3>🤖 AI Assistant</h3>
+    <button class="close-btn" (click)="toggleVisibility()">×</button>
+  </div>
+  
+  <div class="ai-content">
+    <!-- Smart Recommendations -->
+    <div class="ai-section" *ngIf="recommendations.length > 0">
+      <h4>📊 Smart Insights</h4>
+      <div class="recommendation-list">
+        <div 
+          class="recommendation-item" 
+          *ngFor="let rec of recommendations"
+          [style.border-left-color]="getRecommendationColor(rec.type)">
+          <div class="rec-header">
+            <span class="rec-icon">{{ getRecommendationIcon(rec.type) }}</span>
+            <span class="rec-title">{{ rec.title }}</span>
+          </div>
+          <p class="rec-description">{{ rec.description }}</p>
+          <div class="rec-action" *ngIf="rec.action">
+            <strong>Suggestion:</strong> {{ rec.action }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scheduling Suggestions -->
+    <div class="ai-section" *ngIf="schedulingSuggestions.length > 0">
+      <div class="section-header">
+        <h4>⏰ Smart Scheduling</h4>
+        <button class="auto-schedule-btn" (click)="autoScheduleAllTasks()">
+          🤖 Auto-Schedule All
+        </button>
+      </div>
+      
+      <div class="scheduling-list">
+        <div 
+          class="scheduling-item" 
+          *ngFor="let suggestion of schedulingSuggestions">
+          <div class="task-info">
+            <div class="task-header">
+              <div class="task-title">{{ suggestion.task.title }}</div>
+              <div class="confidence-badge" [style.background-color]="getConfidenceColor(suggestion.confidence)">
+                {{ getConfidenceText(suggestion.confidence) }} {{ (suggestion.confidence * 100).toFixed(0) }}%
+              </div>
+            </div>
+            <div class="task-details">
+              <span class="priority-badge" [style.background-color]="suggestion.task.priority === 'high' ? '#EF4444' : suggestion.task.priority === 'medium' ? '#F59E0B' : '#10B981'">
+                {{ suggestion.task.priority | titlecase }}
+              </span>
+              <span class="estimated-time" *ngIf="suggestion.task.estimatedTime">
+                ⏱️ {{ suggestion.task.estimatedTime }}m
+              </span>
+            </div>
+          </div>
+          
+          <div class="suggestion-info">
+            <div class="suggested-time">
+              📅 {{ formatDate(suggestion.suggestedTime) }} at {{ formatTime(suggestion.suggestedTime) }}
+            </div>
+            <div class="suggestion-reason">{{ suggestion.reason }}</div>
+          </div>
+          
+          <div class="action-buttons">
+            <button class="schedule-btn primary" (click)="scheduleTask(suggestion)">
+              📝 Schedule
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No suggestions state -->
+    <div class="no-suggestions" *ngIf="recommendations.length === 0 && schedulingSuggestions.length === 0">
+      <div class="empty-state">
+        <span class="empty-icon">🎯</span>
+        <p>Great work! No immediate suggestions right now.</p>
+        <p class="empty-subtitle">Your tasks and schedule are well organized.</p>
+      </div>
+    </div>
+  </div>
+</div>

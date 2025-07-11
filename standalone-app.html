@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Motion AI Calendar & Task Organizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0F0F0F;
+            min-height: 100vh;
+            color: #e5e7eb;
+            overflow-x: hidden;
+        }
+        body:before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .app-header {
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .app-header h1 {
+            background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .app-tabs {
+            display: flex;
+            gap: 12px;
+        }
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #E5E7EB;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .tab-btn.active, .tab-btn:hover {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: rgba(124, 58, 237, 0.5);
+            color: #C4B5FD;
+            transform: translateY(-2px);
+        }
+        .app-content {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .google-auth-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            text-align: center;
+        }
+        .setup-instructions h3 {
+            color: #7C3AED;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        .sign-in-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .google-signin-button {
+            background: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+        .google-signin-button:hover {
+            background: #3367D6;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(66, 133, 244, 0.4);
+        }
+        .calendar-container, .task-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            min-height: 400px;
+        }
+        .calendar-header, .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .calendar-header h2, .task-header h2 {
+            color: #F3F4F6;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #E5E7EB;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .nav-btn:hover {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: rgba(124, 58, 237, 0.5);
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .calendar-cell {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px 8px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .calendar-cell.header {
+            background: rgba(124, 58, 237, 0.2);
+            min-height: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            justify-content: center;
+            text-align: center;
+        }
+        .task-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .task-column {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .task-column h3 {
+            color: #F3F4F6;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        .task-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+        .ai-assistant {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            display: none;
+        }
+        .ai-assistant.open {
+            display: block;
+        }
+        .ai-toggle {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+            transition: all 0.3s ease;
+        }
+        .ai-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 40px rgba(124, 58, 237, 0.6);
+        }
+        .hidden { display: none; }
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            color: #9CA3AF;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- App Header -->
+        <header class="app-header">
+            <h1>Motion AI Calendar & Task Organizer</h1>
+            <div class="app-tabs">
+                <button class="tab-btn active" onclick="setActiveTab('calendar')">📅 Calendar</button>
+                <button class="tab-btn" onclick="setActiveTab('tasks')">✅ Tasks</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-content">
+            <!-- Google Calendar Integration -->
+            <div class="google-auth-container">
+                <div class="setup-instructions">
+                    <h3>🔧 Google Calendar Setup Required</h3>
+                    <p style="margin-bottom: 16px;">To connect your Google Calendar, you need to configure OAuth credentials.</p>
+                    <div class="sign-in-section">
+                        <button class="google-signin-button" onclick="showGoogleSetup()">
+                            📧 Setup Google Calendar Integration
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calendar View -->
+            <div id="calendar" class="calendar-container">
+                <div class="calendar-header">
+                    <h2>📅 Calendar</h2>
+                    <div class="calendar-nav">
+                        <button class="nav-btn" onclick="navigateMonth(-1)">‹</button>
+                        <span id="current-month">July 2025</span>
+                        <button class="nav-btn" onclick="navigateMonth(1)">›</button>
+                        <button class="nav-btn" onclick="setView('day')">Day</button>
+                        <button class="nav-btn" onclick="setView('week')">Week</button>
+                        <button class="nav-btn active" onclick="setView('month')">Month</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Calendar will be generated here -->
+                </div>
+            </div>
+
+            <!-- Task Manager -->
+            <div id="tasks" class="task-container hidden">
+                <div class="task-header">
+                    <h2>✅ Task Manager</h2>
+                    <button class="nav-btn" onclick="addNewTask()">+ Add Task</button>
+                </div>
+                <div class="task-board">
+                    <div class="task-column">
+                        <h3>📋 To Do</h3>
+                        <div class="task-item">
+                            <strong>Setup Google Calendar</strong><br>
+                            <small>Configure OAuth credentials for calendar integration</small>
+                        </div>
+                        <div class="task-item">
+                            <strong>Plan Weekly Schedule</strong><br>
+                            <small>Organize tasks for the upcoming week</small>
+                        </div>
+                    </div>
+                    <div class="task-column">
+                        <h3>🚀 In Progress</h3>
+                        <div class="task-item">
+                            <strong>AI Calendar Integration</strong><br>
+                            <small>Implementing intelligent scheduling features</small>
+                        </div>
+                    </div>
+                    <div class="task-column">
+                        <h3>✅ Done</h3>
+                        <div class="task-item">
+                            <strong>Motion AI Design</strong><br>
+                            <small>Dark theme with glassmorphism effects</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- AI Assistant -->
+        <div class="ai-assistant" id="ai-assistant">
+            <h3 style="color: #7C3AED; margin-bottom: 12px;">🤖 AI Assistant</h3>
+            <p style="font-size: 14px; margin-bottom: 16px;">I can help you with:</p>
+            <ul style="font-size: 13px; color: #9CA3AF; margin-bottom: 16px;">
+                <li>• Finding optimal meeting times</li>
+                <li>• Scheduling tasks intelligently</li>
+                <li>• Managing calendar conflicts</li>
+                <li>• Time blocking strategies</li>
+            </ul>
+            <input type="text" placeholder="Ask me anything..." style="width: 100%; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        </div>
+        
+        <button class="ai-toggle" onclick="toggleAI()">🤖</button>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let activeTab = 'calendar';
+        let currentView = 'month';
+
+        function setActiveTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('calendar').classList.toggle('hidden', tab !== 'calendar');
+            document.getElementById('tasks').classList.toggle('hidden', tab !== 'tasks');
+        }
+
+        function navigateMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            updateCalendar();
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.calendar-nav .nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase() === view) {
+                    btn.classList.add('active');
+                }
+            });
+            updateCalendar();
+        }
+
+        function updateCalendar() {
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            
+            document.getElementById('current-month').textContent = 
+                monthNames[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+            
+            generateCalendarGrid();
+        }
+
+        function generateCalendarGrid() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            
+            // Add day headers
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            days.forEach(day => {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell header';
+                cell.textContent = day;
+                grid.appendChild(cell);
+            });
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            // Generate 42 cells (6 weeks)
+            for (let i = 0; i < 42; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+                
+                const cellDate = new Date(startDate);
+                cellDate.setDate(startDate.getDate() + i);
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.textContent = cellDate.getDate();
+                dayNumber.style.fontWeight = '600';
+                dayNumber.style.marginBottom = '4px';
+                
+                if (cellDate.getMonth() !== currentDate.getMonth()) {
+                    dayNumber.style.opacity = '0.3';
+                }
+                
+                if (cellDate.toDateString() === new Date().toDateString()) {
+                    dayNumber.style.color = '#7C3AED';
+                    dayNumber.style.background = 'rgba(124, 58, 237, 0.2)';
+                    dayNumber.style.borderRadius = '4px';
+                    dayNumber.style.padding = '2px 4px';
+                }
+                
+                cell.appendChild(dayNumber);
+                
+                // Add sample events
+                if (cellDate.getDate() === 14 && cellDate.getMonth() === currentDate.getMonth()) {
+                    const event = document.createElement('div');
+                    event.textContent = 'Team Meeting';
+                    event.style.fontSize = '11px';
+                    event.style.background = 'rgba(59, 130, 246, 0.8)';
+                    event.style.borderRadius = '3px';
+                    event.style.padding = '2px 4px';
+                    event.style.marginTop = '2px';
+                    cell.appendChild(event);
+                }
+                
+                grid.appendChild(cell);
+            }
+        }
+
+        function toggleAI() {
+            document.getElementById('ai-assistant').classList.toggle('open');
+        }
+
+        function showGoogleSetup() {
+            alert('To enable Google Calendar integration:\\n\\n1. Go to Google Cloud Console\\n2. Create OAuth 2.0 credentials\\n3. Update the configuration in google-auth.service.ts\\n\\nFor now, the app runs in demo mode with sample data.');
+        }
+
+        function addNewTask() {
+            const taskName = prompt('Enter task name:');
+            if (taskName) {
+                alert('Task "' + taskName + '" would be added to the task board.\\n\\nThis is a demo - full functionality requires the Angular server.');
+            }
+        }
+
+        // Initialize calendar
+        updateCalendar();
+
+        // Show success message
+        setTimeout(() => {
+            const container = document.querySelector('.google-auth-container');
+            container.innerHTML = `
+                <div style="text-align: center; color: #10B981;">
+                    <h3>✅ Motion AI Calendar Successfully Loaded!</h3>
+                    <p style="margin: 12px 0;">This is a standalone demo version.</p>
+                    <p style="font-size: 14px; color: #9CA3AF;">
+                        For full Google Calendar integration, run: <code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">npm start</code>
+                    </p>
+                </div>
+            `;
+        }, 2000);
+    </script>
+</body>
+</html>

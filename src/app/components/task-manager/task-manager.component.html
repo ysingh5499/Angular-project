@@ -1,0 +1,224 @@
+<div class="task-manager">
+  <!-- Task Manager Header -->
+  <div class="task-header">
+    <h2>AI Task Organizer</h2>
+    <button class="add-task-btn" (click)="showAddForm = true">+ Add Task</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="task-filters">
+    <select [(ngModel)]="filter.status" (change)="applyFilter()">
+      <option value="">All Status</option>
+      <option value="todo">To Do</option>
+      <option value="in-progress">In Progress</option>
+      <option value="completed">Completed</option>
+    </select>
+    
+    <select [(ngModel)]="filter.priority" (change)="applyFilter()">
+      <option value="">All Priorities</option>
+      <option value="low">Low Priority</option>
+      <option value="medium">Medium Priority</option>
+      <option value="high">High Priority</option>
+    </select>
+  </div>
+
+  <!-- Add Task Form -->
+  <div class="add-task-form" *ngIf="showAddForm">
+    <div class="form-overlay" (click)="showAddForm = false"></div>
+    <div class="form-container">
+      <h3>Add New Task</h3>
+      
+      <div class="form-group">
+        <label>Title *</label>
+        <input 
+          type="text" 
+          [(ngModel)]="newTask.title" 
+          placeholder="Enter task title"
+          class="form-input">
+      </div>
+      
+      <div class="form-group">
+        <label>Description</label>
+        <textarea 
+          [(ngModel)]="newTask.description" 
+          placeholder="Enter task description"
+          class="form-textarea"></textarea>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Priority</label>
+          <select [(ngModel)]="newTask.priority" class="form-select">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Estimated Time (minutes)</label>
+          <input 
+            type="number" 
+            [(ngModel)]="newTask.estimatedTime" 
+            class="form-input">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Due Date</label>
+        <input 
+          type="date" 
+          [(ngModel)]="newTask.dueDate" 
+          class="form-input">
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn btn-cancel" (click)="showAddForm = false">Cancel</button>
+        <button class="btn btn-primary" (click)="addTask()">Add Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Board (Kanban Style) -->
+  <div class="task-board">
+    <!-- To Do Column -->
+    <div class="task-column">
+      <div class="column-header">
+        <h3>To Do</h3>
+        <span class="task-count">{{ getTasksByStatus('todo').length }}</span>
+      </div>
+      
+      <div class="task-list">
+        <div 
+          class="task-card" 
+          *ngFor="let task of getTasksByStatus('todo')"
+          [style.border-left-color]="getPriorityColor(task.priority)">
+          
+          <div class="task-content">
+            <div class="task-title">{{ task.title }}</div>
+            <div class="task-description" *ngIf="task.description">
+              {{ task.description }}
+            </div>
+            
+            <div class="task-meta">
+              <span class="priority-badge" [style.background-color]="getPriorityColor(task.priority)">
+                {{ task.priority | titlecase }}
+              </span>
+              <span class="due-date" *ngIf="task.dueDate">
+                📅 {{ formatDueDate(task.dueDate) }}
+              </span>
+              <span class="estimated-time" *ngIf="task.estimatedTime">
+                ⏱️ {{ task.estimatedTime }}m
+              </span>
+            </div>
+            
+            <div class="task-tags">
+              <span class="tag" *ngFor="let tag of task.tags">{{ tag }}</span>
+            </div>
+            
+            <!-- AI Suggestions -->
+            <div class="ai-suggestions" *ngIf="getAISuggestions(task).length > 0">
+              <div class="ai-label">🤖 AI Suggestions:</div>
+              <ul class="suggestion-list">
+                <li *ngFor="let suggestion of getAISuggestions(task)">{{ suggestion }}</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="task-actions">
+            <button class="action-btn schedule-btn" (click)="autoScheduleTask(task)" title="AI Auto-Schedule">🤖</button>
+            <button class="action-btn edit-btn" (click)="editTask(task)">✏️</button>
+            <button class="action-btn next-btn" (click)="toggleTaskStatus(task)">▶️</button>
+            <button class="action-btn delete-btn" (click)="deleteTask(task.id)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- In Progress Column -->
+    <div class="task-column">
+      <div class="column-header">
+        <h3>In Progress</h3>
+        <span class="task-count">{{ getTasksByStatus('in-progress').length }}</span>
+      </div>
+      
+      <div class="task-list">
+        <div 
+          class="task-card" 
+          *ngFor="let task of getTasksByStatus('in-progress')"
+          [style.border-left-color]="getPriorityColor(task.priority)">
+          
+          <div class="task-content">
+            <div class="task-title">{{ task.title }}</div>
+            <div class="task-description" *ngIf="task.description">
+              {{ task.description }}
+            </div>
+            
+            <div class="task-meta">
+              <span class="priority-badge" [style.background-color]="getPriorityColor(task.priority)">
+                {{ task.priority | titlecase }}
+              </span>
+              <span class="due-date" *ngIf="task.dueDate">
+                📅 {{ formatDueDate(task.dueDate) }}
+              </span>
+              <span class="estimated-time" *ngIf="task.estimatedTime">
+                ⏱️ {{ task.estimatedTime }}m
+              </span>
+            </div>
+            
+            <div class="task-tags">
+              <span class="tag" *ngFor="let tag of task.tags">{{ tag }}</span>
+            </div>
+          </div>
+          
+          <div class="task-actions">
+            <button class="action-btn edit-btn" (click)="editTask(task)">✏️</button>
+            <button class="action-btn next-btn" (click)="toggleTaskStatus(task)">✅</button>
+            <button class="action-btn delete-btn" (click)="deleteTask(task.id)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completed Column -->
+    <div class="task-column">
+      <div class="column-header">
+        <h3>Completed</h3>
+        <span class="task-count">{{ getTasksByStatus('completed').length }}</span>
+      </div>
+      
+      <div class="task-list">
+        <div 
+          class="task-card completed" 
+          *ngFor="let task of getTasksByStatus('completed')"
+          [style.border-left-color]="getPriorityColor(task.priority)">
+          
+          <div class="task-content">
+            <div class="task-title">{{ task.title }}</div>
+            <div class="task-description" *ngIf="task.description">
+              {{ task.description }}
+            </div>
+            
+            <div class="task-meta">
+              <span class="priority-badge" [style.background-color]="getPriorityColor(task.priority)">
+                {{ task.priority | titlecase }}
+              </span>
+              <span class="completed-date">
+                ✅ {{ formatDueDate(task.updatedAt) }}
+              </span>
+            </div>
+            
+            <div class="task-tags">
+              <span class="tag" *ngFor="let tag of task.tags">{{ tag }}</span>
+            </div>
+          </div>
+          
+          <div class="task-actions">
+            <button class="action-btn reset-btn" (click)="toggleTaskStatus(task)">↶</button>
+            <button class="action-btn delete-btn" (click)="deleteTask(task.id)">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

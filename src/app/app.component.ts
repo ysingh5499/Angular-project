@@ -6,5 +6,10 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'angular-project';
+  title = 'AI Calendar & Task Organizer';
+  activeTab = 'calendar';
+
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
+  }
 }

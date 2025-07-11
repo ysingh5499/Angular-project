@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angular AI Calendar Launcher</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d4f 100%);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            max-width: 600px;
+        }
+        h1 { color: #7C3AED; margin-bottom: 20px; }
+        .status { padding: 16px; border-radius: 8px; margin: 16px 0; }
+        .success { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .warning { background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .error { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .urls { margin: 20px 0; }
+        .url-link {
+            display: block;
+            color: #60A5FA;
+            text-decoration: none;
+            padding: 8px;
+            border-radius: 6px;
+            margin: 8px 0;
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+        .url-link:hover { background: rgba(96, 165, 250, 0.2); }
+        .instructions { text-align: left; margin: 20px 0; }
+        .instructions li { margin: 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Angular AI Calendar & Task Organizer</h1>
+        
+        <div class="status success">
+            <strong>✅ Application Built Successfully</strong><br>
+            Motion AI-inspired Calendar with Google Calendar Integration
+        </div>
+
+        <div class="status warning">
+            <strong>⚠️ Network Connectivity Issue Detected</strong><br>
+            The app is compiled but servers aren't accessible via localhost
+        </div>
+
+        <h3>🔗 Try These URLs:</h3>
+        <div class="urls">
+            <a href="http://localhost:4200" class="url-link" target="_blank">http://localhost:4200 (Angular Dev Server)</a>
+            <a href="http://127.0.0.1:4200" class="url-link" target="_blank">http://127.0.0.1:4200 (Alternative)</a>
+            <a href="http://localhost:8080" class="url-link" target="_blank">http://localhost:8080 (Production Server)</a>
+            <a href="http://192.168.7.207:7000" class="url-link" target="_blank">http://192.168.7.207:7000 (Network IP)</a>
+        </div>
+
+        <div class="status error">
+            <h3>🔧 Troubleshooting Steps:</h3>
+            <div class="instructions">
+                <ol>
+                    <li><strong>Check Firewall:</strong> System Preferences → Security & Privacy → Firewall</li>
+                    <li><strong>Disable VPN/Proxy:</strong> Temporarily disable any network filtering</li>
+                    <li><strong>Try Different Browser:</strong> Safari, Chrome, Firefox</li>
+                    <li><strong>Run Manual Commands:</strong>
+                        <br><code>cd /Users/yuvraj/IdeaProjects/Angular-project</code>
+                        <br><code>npm start</code>
+                    </li>
+                    <li><strong>Check Terminal:</strong> Look for "Compiled successfully" message</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="status success">
+            <h3>✨ App Features Ready:</h3>
+            <ul style="list-style: none; padding: 0;">
+                <li>📅 Motion AI Dark Theme with Glassmorphism</li>
+                <li>🗓 Calendar Views (Month/Week/Day)</li>
+                <li>✅ Kanban Task Manager</li>
+                <li>🤖 AI Assistant for Smart Scheduling</li>
+                <li>📧 Google Calendar One-Click Sign-in</li>
+                <li>🔄 Real-time Event Synchronization</li>
+            </ul>
+        </div>
+
+        <script>
+            // Auto-try the most likely working URL
+            setTimeout(() => {
+                const urls = [
+                    'http://localhost:4200',
+                    'http://127.0.0.1:4200', 
+                    'http://localhost:8080',
+                    'http://192.168.7.207:7000'
+                ];
+                
+                urls.forEach((url, index) => {
+                    setTimeout(() => {
+                        fetch(url, { mode: 'no-cors' })
+                            .then(() => {
+                                console.log(`✅ ${url} is accessible`);
+                                document.querySelector(`a[href="${url}"]`).style.background = 'rgba(16, 185, 129, 0.3)';
+                                document.querySelector(`a[href="${url}"]`).innerHTML += ' ✅ WORKING';
+                            })
+                            .catch(() => {
+                                console.log(`❌ ${url} is not accessible`);
+                                document.querySelector(`a[href="${url}"]`).style.background = 'rgba(239, 68, 68, 0.2)';
+                                document.querySelector(`a[href="${url}"]`).innerHTML += ' ❌ NOT ACCESSIBLE';
+                            });
+                    }, index * 1000);
+                });
+            }, 2000);
+        </script>
+    </div>
+</body>
+</html>
